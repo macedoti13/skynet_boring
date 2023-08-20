@@ -8,9 +8,7 @@ Welcome to `SkyNet`! This is my little pet project where I'm building a machine 
 1. [Features](#features)
 2. [Installation](#installation)
 3. [Usage](#usage)
-4. [Contributing](#contributing)
-5. [License](#license)
-6. [Acknowledgements](#acknowledgements)
+4. [Acknowledgements](#acknowledgements)
 
 ## Features
 - **Numpy Powered**: Built completely with numpy, ensuring an educational perspective to the ML processes.
@@ -32,3 +30,34 @@ Before diving in, ensure you have numpy:
 ```bash
 pip install numpy
 ```
+
+2. **Initialize Neural Network Layers:** 
+
+Navigate to the SkyNet directory:
+```bash
+```
+
+Now, create your neural layers:
+```bash
+from skynet import Dense
+
+layer1 = Dense(input_size=32, output_size=64, activation='relu')
+```
+
+3. **Building and Training:**
+
+Use the library's functions to construct a neural network model and train it using your data.
+```bash
+(Add sample code as you develop further functionalities.)
+```
+
+4. **Predictions:**
+
+Once your model is trained, making predictions is easy!
+```bash
+``` 
+
+## Acknowledgements
+
+Big thanks to Numpy for being the foundation of this project.
+Grateful for every tutorial and resource that made this learning journey smoother.
