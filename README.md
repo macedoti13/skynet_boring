@@ -21,5 +21,14 @@ Welcome to `SkyNet`! This is my little pet project where I'm building a machine 
 Clone this repository:
 ```bash
 git clone https://github.com/macedoti13/skynet.git
+```
 
 ## Usage
+Getting started with SkyNet is pretty straightforward. Here's a step-by-step guide:
+
+1. **Setup Your Environment:**
+
+Before diving in, ensure you have numpy:
+```bash
+pip install numpy
+```
