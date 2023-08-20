@@ -39,22 +39,40 @@ Navigate to the SkyNet directory:
 
 Now, create your neural layers:
 ```bash
-from skynet import Dense
+from skynet import MLP
+from skynet.layers import Dense 
 
-layer1 = Dense(input_size=32, output_size=64, activation='relu')
+mlp = MLP()
+
+# Add the first hidden layer with 3 neurons and sigmoid activation
+mlp.add(Dense(2, 3, activation="sigmoid"))
+
+# Add the output layer with 1 neuron and sigmoid activation
+mlp.add(Dense(3, 1, activation="sigmoid"))
 ```
 
 3. **Building and Training:**
 
 Use the library's functions to construct a neural network model and train it using your data.
 ```bash
-(Add sample code as you develop further functionalities.)
+# compile the model with hyperparameters 
+mlp.compile(epochs=1000, learning_rate=0.01, optimizer="vanilla", batch_size=1, loss="mse")
+
+# create a training set (featueres as columns)
+X = np.array([[0.5, 0.2], 
+              [0.1, 0.6]])
+
+y = np.array([[0.7, 0.8]])
+
+# use the fit method to train the model
+mlp.fit(X, y)
 ```
 
 4. **Predictions:**
 
 Once your model is trained, making predictions is easy!
 ```bash
+trained_output = mlp.forward(X)
 ``` 
 
 ## Acknowledgements
