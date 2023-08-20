@@ -35,6 +35,7 @@ pip install numpy
 
 Navigate to the SkyNet directory:
 ```bash
+cd skynet
 ```
 
 Now, create your neural layers:
