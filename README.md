@@ -21,3 +21,5 @@ Welcome to `SkyNet`! This is my little pet project where I'm building a machine 
 Clone this repository:
 ```bash
 git clone https://github.com/macedoti13/skynet.git
+
+## Usage
