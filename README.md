@@ -1,6 +1,6 @@
 # SkyNet: A Numpy-powered Machine Learning Library 🚀
 
-Welcome to `SkyNet`! This is my little pet project where I'm building a machine learning library using just numpy. It's a fun adventure to understand the nuts and bolts of ML, and I'm documenting it all here. So jump in!
+Welcome to SkyNet! This is my little pet project where I'm building a machine learning library using just numpy. It's a fun adventure to understand the nuts and bolts of ML, and I'm documenting it all here. So jump in!
 
 ![Banner/Image](images/skynet.png)
 
