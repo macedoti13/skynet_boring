@@ -66,22 +66,20 @@ class Dense:
         In other words, d_output represents the partial derivative of the loss with respect to the activation of layer L, often noted as "d_loss/d_a_L". 
         To get the delta (or error term) for this last layer, it's necessary to multiply it element-wise with the gradient of the activation function. 
         This relationship can be expressed as "delta_L = d_loss/d_a_L times the derivative of a_L with respect to z_L". This is achieved by the line: 
-            `d_output = d_output * (sigmoid_output * (1 - sigmoid_output))`, 
-            where `sigmoid_output` is the activation of this layer.
+        `d_output = d_output * (sigmoid_output * (1 - sigmoid_output))`, where `sigmoid_output` is the activation of this layer.
 
-            For any preceding layer (l), where l is less than L, the error term or delta of that layer is determined by multiplying the delta from the next 
-            layer by the transposed weight matrix of the next layer and the derivative of the activation function for layer l. Specifically, the equation for 
-            this is "delta_l = (weights of layer l+1 transposed dot product with delta of layer l+1) times the derivative of the activation function at z_l". 
+        For any preceding layer (l), where l is less than L, the error term or delta of that layer is determined by multiplying the delta from the next 
+        layer by the transposed weight matrix of the next layer and the derivative of the activation function for layer l. Specifically, the equation for 
+        this is "delta_l = (weights of layer l+1 transposed dot product with delta of layer l+1) times the derivative of the activation function at z_l". 
 
-            The line `d_input = np.dot(d_output, self.weights.T)` computes the first part of that equation, which will then serve as the `d_output` for the 
-            next backward pass through layer l-1. 
+        The line `d_input = np.dot(d_output, self.weights.T)` computes the first part of that equation, which will then serve as the `d_output` for the 
+        next backward pass through layer l-1. 
 
-            With the computed delta, the gradients with respect to the weights and biases for the current layer are determined using:
-            `d_weights = np.dot(self.input_data.T, d_output)` and 
-            `d_biases = np.sum(d_output, axis=0, keepdims=True)`.
+        With the computed delta, the gradients with respect to the weights and biases for the current layer are determined using:
+        `d_weights = np.dot(self.input_data.T, d_output)` and `d_biases = np.sum(d_output, axis=0, keepdims=True)`.
             
-            These gradients are stored for optimization purposes. Finally, `d_input` is returned and serves as the `d_output` for the previous layer in the 
-            next invocation of the `backward` function, ensuring the error is backpropagated through the entire network.
+        These gradients are stored for optimization purposes. Finally, `d_input` is returned and serves as the `d_output` for the previous layer in the 
+        next invocation of the `backward` function, ensuring the error is backpropagated through the entire network.
 
         Args:
             d_output (np.array): 
