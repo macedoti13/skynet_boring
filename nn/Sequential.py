@@ -1,11 +1,11 @@
 import numpy as np
 from typing import List, Tuple
 
-class MLP:
+class Sequential:
 
     def __init__(self) -> None:
         """
-        Initialize an instance of the MLP (Multi-Layer Perceptron) class.
+        Initialize an instance of the Sequential (Multi-Layer Perceptron) class.
 
         Attributes:
         - layers: List of layers added to the neural network.
@@ -165,3 +165,13 @@ class MLP:
 
             print(f"Epoch Loss: {epoch_loss}")
             self.loss_epochs.append(epoch_loss)  # Store the average epoch loss.
+            
+            
+    def predict(self, X):
+        """
+        Use the neural network to predict a given input matrix X
+        
+        Args:
+        - X: Input data for prediction
+        """
+        return self.forward(X)
