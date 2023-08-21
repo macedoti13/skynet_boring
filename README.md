@@ -40,10 +40,10 @@ cd skynet
 
 Now, create your neural layers:
 ```bash
-from skynet import MLP
-from skynet.layers import Dense 
+from skynet.nn import Sequential 
+from skynet.nn.layers import Dense 
 
-mlp = MLP()
+mlp = Sequential()
 
 # Add the first hidden layer with 3 neurons and sigmoid activation
 mlp.add(Dense(2, 3, activation="sigmoid"))
@@ -73,7 +73,7 @@ mlp.fit(X, y)
 
 Once your model is trained, making predictions is easy!
 ```bash
-trained_output = mlp.forward(X)
+trained_output = mlp.predict(X)
 ``` 
 
 ## Acknowledgements
