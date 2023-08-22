@@ -55,12 +55,21 @@ class Dense:
         """
         if self.activation == "sigmoid":
             return 1 / (1 + np.exp(-z))
+        
         elif self.activation == "relu":
             return np.maximum(0, z)
+        
+        elif self.activation == "leaky_relu":
+            alpha = 0.01  # should be adjustable
+            return np.where(z > 0, z, alpha * z)
+        
         elif self.activation == "softmax":
             e_z = np.exp(z - np.max(z))  # for numerical stability, cancels the normalization step
             return e_z / e_z.sum(axis=0, keepdims=True)
-
+        
+        elif self.activation == "tanh":
+            return np.tanh(z)
+        
         return z # default is linear activation
 
     def backward(self, d_output: np.array) -> np.array:
@@ -96,6 +105,10 @@ class Dense:
         if self.activation == 'relu':
             d_output = d_output * (self.z > 0)
             
+        elif self.activation == 'leaky_relu':
+            alpha = 0.01
+            d_output = np.where(self.z > 0, 1, alpha) * d_output
+            
         elif self.activation == 'sigmoid':
             sigmoid_output = self.apply_activation(self.z)
             d_output = d_output * (sigmoid_output * (1 - sigmoid_output))
@@ -105,6 +118,9 @@ class Dense:
             diag_softmax = np.diagflat(softmax_output) # Create a diagonal matrix of the softmax outputs
             d_output = np.dot(diag_softmax, d_output) - softmax_output * np.dot(softmax_output.T, d_output) # Compute the simplified Jacobian matrix product with d_output
             
+        elif self.activation == 'tanh':
+            tanh_output = self.apply_activation(self.z)
+            d_output = d_output * (1.0 - tanh_output**2)
 
         d_input = np.dot(self.weights.T, d_output)
         d_weights = np.dot(d_output, self.input_data.T)
