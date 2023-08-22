@@ -80,8 +80,27 @@ class Sequential:
         Returns:
         - loss: Computed loss.
         """
+        num_samples = y.shape[0]
+        
         if self.loss == "mse":
-            return np.mean(0.5 * (yhat - y)**2)
+            loss = np.mean(0.5 * (yhat - y)**2)
+            return loss
+        
+        elif self.loss == "mae":
+            loss = np.mean(np.abs(yhat - y))
+            return loss
+        
+        elif self.loss == "cross_entropy":
+            epsilon = 1e-15  # To avoid log(0)
+            yhat = np.clip(yhat, epsilon, 1 - epsilon)
+            loss = -np.sum(y * np.log(yhat)) / num_samples
+            return loss
+
+        elif self.loss == "binary_cross_entropy":
+            epsilon = 1e-15  # To avoid log(0)
+            yhat = np.clip(yhat, epsilon, 1 - epsilon)
+            loss = -np.sum(y * np.log(yhat) + (1 - y) * np.log(1 - yhat)) / num_samples
+            return loss
 
 
     def compute_gradient_of_loss(self, yhat: np.array, y: np.array) -> np.array:
@@ -97,6 +116,15 @@ class Sequential:
         """
         if self.loss == "mse":
             return yhat - y 
+        
+        elif self.loss == "mae":
+            return np.where(yhat > y, 1, np.where(yhat < y, -1, 0))
+        
+        elif self.loss == "cross_entropy":
+            return yhat - y
+        
+        elif self.loss == "binary_cross_entropy":
+            return (yhat - y) / (yhat * (1 - yhat))
 
 
     def create_mini_batches(self, X: np.array, y: np.array, batch_size: int) -> List[Tuple[np.array, np.array]]:
