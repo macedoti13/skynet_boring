@@ -57,6 +57,9 @@ class Dense:
             return 1 / (1 + np.exp(-z))
         elif self.activation == "relu":
             return np.maximum(0, z)
+        elif self.activation == "softmax":
+            e_z = np.exp(z - np.max(z))  # for numerical stability, cancels the normalization step
+            return e_z / e_z.sum(axis=0, keepdims=True)
 
         return z # default is linear activation
 
@@ -92,9 +95,16 @@ class Dense:
         """
         if self.activation == 'relu':
             d_output = d_output * (self.z > 0)
+            
         elif self.activation == 'sigmoid':
             sigmoid_output = self.apply_activation(self.z)
             d_output = d_output * (sigmoid_output * (1 - sigmoid_output))
+            
+        elif self.activation == "softmax":
+            softmax_output = self.apply_activation(self.z)
+            diag_softmax = np.diagflat(softmax_output) # Create a diagonal matrix of the softmax outputs
+            d_output = np.dot(diag_softmax, d_output) - softmax_output * np.dot(softmax_output.T, d_output) # Compute the simplified Jacobian matrix product with d_output
+            
 
         d_input = np.dot(self.weights.T, d_output)
         d_weights = np.dot(d_output, self.input_data.T)
