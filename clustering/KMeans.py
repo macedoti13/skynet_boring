@@ -104,3 +104,9 @@ class KMeans:
             # clear points for next iteration
             for cluster in self.clusters:
                 cluster.points = []
+    
+                
+    def assign(self, X: np.array):
+        """"""
+        self.assign_points_to_clusters(X)
+        
