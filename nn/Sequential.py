@@ -159,8 +159,6 @@ class Sequential:
 
                 self.backward(loss_gradient_mini)  # Backward pass: update weights and biases.
 
-                print(f"    Batch loss: {loss_mini}")
-
             epoch_loss = np.mean(loss_batches)  # Compute average loss for the epoch.
 
             print(f"Epoch Loss: {epoch_loss}")
