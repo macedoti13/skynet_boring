@@ -1,112 +1,87 @@
 import numpy as np
 
 class KMeans:
-    """"""
     
-    class Cluster:
-        """"""
+    def __init__(self, k: int, distance: str = "euclidian") -> None:
+        """
+        Initializes the KMeans clustering model.
 
-        def __init__(self, centroid_min, centroid_max, n_dims) -> None:
-            """"""
-            self.centroid = np.random.uniform(centroid_min, centroid_max, n_dims)
-            self.points = []
-            
-        def recalculate_centroid(self):
-            points_array = np.array(self.points) # Convert list of points to numpy array for computation
-            self.centroid = np.mean(points_array, axis=0)
-    
-            
-    def __init__(self, k: int, distance: str) -> None:
-        """"""
+        Args:
+            k (int): The number of clusters to form.
+            distance (str, optional): The distance metric to use. Options are "euclidian" and "manhattan". Defaults to "euclidian".
+        """
         self.k = k
         self.distance = distance
-        self.clusters = []
-    
-    
-    def initialize_centroids(self, centroid_min: float, centroid_max: float, n_dims: int) -> None:
-        """"""
-        for _ in range(self.k):
-            self.clusters.append(self.Cluster(centroid_min, centroid_max, n_dims))        
-            
-            
-    def _calculate_distance(self, x: np.array, y: np.array, p: int) -> float:
-        """"""
-        total_sum = 0
-        for i in range(len(x)):
-            result = np.abs(x[i] - y[i])**p
-            total_sum += result
-            
-        return np.power(total_sum, 1/p)
-    
-    
-    def calculate_distance(self, x: np.array, y: np.array) -> float: 
-        """distance between two vectors"""
-        if self.distance == "euclidian":
-            p = 2
-            distance = self._calculate_distance(x, y, p)
-        elif self.distance == "manhattan":
-            p = 1
-            distance = self._calculate_distance(x, y, p)
-            
-        return distance
-    
-    
-    def _assign_point_to_cluster(self, x: np.array) -> None:
-        """"""
-        distances_to_clusters = []
+        self.centroids = None
         
-        for cluster in self.clusters:
-            distance = self.calculate_distance(x, cluster.centroid)
-            distances_to_clusters.append(distance)
-            
-        best_cluster_index = distances_to_clusters.index(min(distances_to_clusters))
+    def _random_initialize_centroids(self, X: np.array) -> None:
+        """
+        Randomly selects k data points from X as the initial centroids.
+
+        Args:
+            X (np.array): The input dataset.
+        """
+        random_indices = np.random.choice(X.shape[0], self.k, replace=False)  # Selects k unique indices 
+        self.centroids = X[random_indices]  # Assign these points as centroids
         
-        self.clusters[best_cluster_index].points.append(x)
+    def _calculate_distance(self, x: np.array, y: np.array) -> float:
+        """
+        Calculates the distance between vectors x and y using the specified metric.
+
+        Args:
+            x (np.array): Vector or array of vectors.
+            y (np.array): Single vector.
+
+        Returns:
+            float or np.array: Distance(s) between x and y.
+        """
+        if len(x.shape) == 1:  # If x is a single point
+            if self.distance == "euclidian":
+                return np.linalg.norm(x - y)
+            elif self.distance == "manhattan":
+                return np.sum(np.abs(x - y))
+        else:  # If x contains multiple points
+            if self.distance == "euclidian":
+                return np.linalg.norm(x - y.reshape(1, -1), axis=1)
+            elif self.distance == "manhattan":
+                return np.sum(np.abs(x - y.reshape(1, -1)), axis=1)
         
-        
-    def assign_points_to_clusters(self, X: np.array) -> None:
-        """"""
-        for point in X:
-            self._assign_point_to_cluster(point)
-            
-            
-    def update_centroids(self) -> None:
-        """"""
-        for cluster in self.clusters:
-            cluster.recalculate_centroid()
-            
-            
     def fit(self, X: np.array, max_iters: int = 100, tolerance: float = 1e-4) -> None:
-        """"""
-        n_dims = X.shape[1]
-        centroid_min = X.min()
-        centroid_max = X.max()
-        
-        # initialize the centroids randomly 
-        self.initialize_centroids(centroid_min, centroid_max, n_dims)
+        """
+        Fits the model to the data using the KMeans clustering algorithm.
+
+        Args:
+            X (np.array): Input dataset.
+            max_iters (int, optional): Maximum number of iterations for the algorithm. Defaults to 100.
+            tolerance (float, optional): Convergence threshold. Algorithm stops if the change is below this threshold. Defaults to 1e-4.
+        """
+        # Initialize the centroids
+        self._random_initialize_centroids(X)
         
         for _ in range(max_iters):
+            old_centroids = self.centroids.copy()  # Copy old centroids for comparison 
             
-            # save old centroids to check for movement
-            old_centroids = [cluster.centroid.copy() for cluster in self.clusters]
-        
-            # assign points to clusters
-            self.assign_points_to_clusters(X)
+            # Compute distances and assign each data point to the nearest centroid
+            distances = np.array([self._calculate_distance(X, centroid) for centroid in self.centroids])
+            labels = np.argmin(distances, axis=0)
             
-            # recalculate the centroids
-            self.update_centroids()
-            
-            # check for convergence (centroids don't change anymore)
-            movements = [self.calculate_distance(old, new.centroid) for old, new in zip(old_centroids, self.clusters)]
-            if max(movements) < tolerance:
+            # Recompute the centroids
+            for i in range(self.k):
+                self.centroids[i] = X[labels == i].mean(axis=0)
+                
+            # Check for convergence
+            if np.all(np.abs(self.centroids - old_centroids) < tolerance):
                 break
             
-            # clear points for next iteration
-            for cluster in self.clusters:
-                cluster.points = []
-    
-                
-    def assign(self, X: np.array):
-        """"""
-        self.assign_points_to_clusters(X)
-        
+    def predict(self, X: np.array) -> np.array:
+        """
+        Assigns each data point in X to the nearest centroid.
+
+        Args:
+            X (np.array): Input dataset.
+
+        Returns:
+            np.array: Array of cluster labels.
+        """
+        distances = np.array([self._calculate_distance(X, centroid) for centroid in self.centroids])  # Compute distances for each data point
+        return np.argmin(distances, axis=0)  # Return the closest centroid's label for each data point
