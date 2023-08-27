@@ -1,146 +1,94 @@
 import numpy as np
+from ..initializers import initialize_weights, initialize_bias
+from ..activations import get_activation_function, get_activation_derivative
+from ..optimizers import get_optimizer
 
 class Dense:
     """
-    Fully Connected Neural Network Layer (Dense Layer).
+    Represents a fully connected (dense) neural network layer. Each neuron in this layer is connected to every neuron in the previous layer.
+    
+    Attributes:
+        weights (np.array): Weights matrix of the layer.
+        bias (np.array): Bias vector for the layer. Set to zeros if `has_bias=False`.
+        activation (function): Activation function for neurons.
+        activation_derivative (function): Derivative of the activation function.
+        has_bias (bool): Indicator for including bias.
+    """    
 
-    This layer is characterized by a weights matrix, bias vector, and an optional activation function.
-    The weights and biases are initialized during the object instantiation and can be optimized using backpropagation.
-    """
 
-    def __init__(self, input_size: int, output_size: int, activation: str = None) -> None:
+    def __init__(self, input_size: int, output_size: int, activation: str = "sigmoid", has_bias: bool = True, initialization: str = "random") -> None:
         """
-        Initializes the Dense layer with randomly generated weights and zeros biases.
+        Initializes the Dense layer.
 
         Args:
-            input_size (int): The number of input features.
-            output_size (int): The number of output neurons or units.
-            activation (str, optional): The activation function to be applied after the linear transformation.
-                Supported values are "sigmoid", "relu", or None for no activation. Defaults to None.
+            input_size (int): Number of input features or neurons from the previous layer.
+            output_size (int): Number of neurons in this layer.
+            activation (str, optional): Activation function's name. Defaults to "sigmoid".
+            has_bias (bool, optional): Indicator for bias units. Defaults to True.
+            initialization (str, optional): Method to initialize weights and biases. Defaults to "random".
         """
-        self.weights = np.random.randn(output_size, input_size) * 0.01
-        self.bias = np.zeros((output_size, 1))
-        self.activation = activation
+        self.weights = initialize_weights(initialization, input_size, output_size)
+        self.bias = initialize_bias(has_bias, initialization, output_size)
+        self.activation = get_activation_function(activation)
+        self.activation_derivative = get_activation_derivative(activation)
+        self.has_bias = has_bias
 
-    def forward(self, input_data: np.array) -> np.array:
+
+    def forward(self, input_vector: np.array) -> np.array:
         """
-        Performs the forward pass of the neural network.
-
-        This involves a linear transformation using the weights and biases followed by an activation function if specified.
+        Computes the forward pass through the layer.
 
         Args:
-            input_data (np.array): The input data for the forward pass.
+            input_vector (np.array): Layer inputs.
 
         Returns:
-            np.array: The resulting output after applying the linear transformation and activation function.
+            np.array: Activations after linear transformation and activation function.
         """
-        self.input_data = input_data
-        self.z = np.dot(self.weights, self.input_data) + self.bias
-
-        if self.activation is not None:
-            self.a = self.apply_activation(self.z)
-            return self.a
-
-        return self.z 
-
-    def apply_activation(self, z: np.array) -> np.array:
-        """
-        Applies the specified activation function to the input.
-
-        Args:
-            z (np.array): The input data after linear transformation.
-
-        Returns:
-            np.array: The output after applying the activation function.
-        """
-        if self.activation == "sigmoid":
-            return 1 / (1 + np.exp(-z))
+        # Store input for backpropagation
+        self.input_vector = input_vector 
+        # Linear transformation (Wx + b)
+        self.z = np.dot(self.weights, self.input_vector) + self.bias
+        # Activation(Wx + b)
+        self.a = self.activation(self.z)
         
-        elif self.activation == "relu":
-            return np.maximum(0, z)
-        
-        elif self.activation == "leaky_relu":
-            alpha = 0.01  # should be adjustable
-            return np.where(z > 0, z, alpha * z)
-        
-        elif self.activation == "softmax":
-            e_z = np.exp(z - np.max(z))  # for numerical stability, cancels the normalization step
-            return e_z / e_z.sum(axis=0, keepdims=True)
-        
-        elif self.activation == "tanh":
-            return np.tanh(z)
-        
-        return z # default is linear activation
+        return self.a
+
 
     def backward(self, d_output: np.array) -> np.array:
         """
-        For the last layer (layer L), the `d_output` is essentially the gradient of the loss with respect to the output (activation) of this layer. 
-        In other words, d_output represents the partial derivative of the loss with respect to the activation of layer L, often noted as "d_loss/d_a_L". 
-        To get the delta (or error term) for this last layer, it's necessary to multiply it element-wise with the gradient of the activation function. 
-        This relationship can be expressed as "delta_L = d_loss/d_a_L times the derivative of a_L with respect to z_L". This is achieved by the line: 
-        `d_output = d_output * (sigmoid_output * (1 - sigmoid_output))`, where `sigmoid_output` is the activation of this layer.
-
-        For any preceding layer (l), where l is less than L, the error term or delta of that layer is determined by multiplying the delta from the next 
-        layer by the transposed weight matrix of the next layer and the derivative of the activation function for layer l. Specifically, the equation for 
-        this is "delta_l = (weights of layer l+1 transposed dot product with delta of layer l+1) times the derivative of the activation function at z_l". 
-
-        The line `d_input = np.dot(d_output, self.weights.T)` computes the first part of that equation, which will then serve as the `d_output` for the 
-        next backward pass through layer l-1. 
-
-        With the computed delta, the gradients with respect to the weights and biases for the current layer are determined using:
-        `d_weights = np.dot(self.input_data.T, d_output)` and `d_biases = np.sum(d_output, axis=0, keepdims=True)`.
-            
-        These gradients are stored for optimization purposes. Finally, `d_input` is returned and serves as the `d_output` for the previous layer in the 
-        next invocation of the `backward` function, ensuring the error is backpropagated through the entire network.
+        Computes the gradients using backpropagation.
 
         Args:
-            d_output (np.array): 
-                - For the last layer (L), it represents the gradient of the loss with respect to the network's output, often noted as "d_loss/d_a_L".
-                - For any other layer (l) where l is less than L, it is the dot product of the transposed weights of the next layer and the delta of the 
-                    next layer.
+            d_output (np.array): Gradient of the loss with respect to the outputs of this layer. It's the first term of the delta for this layer.
 
         Returns:
-            np.array: The product of the current layer's delta and the transposed weight matrix, which will serve as the `d_output` for the previous layer.
+            np.array: Gradient w.r.t. layer inputs.
         """
-        if self.activation == 'relu':
-            d_output = d_output * (self.z > 0)
-            
-        elif self.activation == 'leaky_relu':
-            alpha = 0.01
-            d_output = np.where(self.z > 0, 1, alpha) * d_output
-            
-        elif self.activation == 'sigmoid':
-            sigmoid_output = self.apply_activation(self.z)
-            d_output = d_output * (sigmoid_output * (1 - sigmoid_output))
-            
-        elif self.activation == "softmax":
-            softmax_output = self.apply_activation(self.z)
-            diag_softmax = np.diagflat(softmax_output) # Create a diagonal matrix of the softmax outputs
-            d_output = np.dot(diag_softmax, d_output) - softmax_output * np.dot(softmax_output.T, d_output) # Compute the simplified Jacobian matrix product with d_output
-            
-        elif self.activation == 'tanh':
-            tanh_output = self.apply_activation(self.z)
-            d_output = d_output * (1.0 - tanh_output**2)
-
-        d_input = np.dot(self.weights.T, d_output)
-        d_weights = np.dot(d_output, self.input_data.T)
-        d_biases = np.sum(d_output, axis=1, keepdims=True)
-
-        self.d_weights = d_weights
-        self.d_biases = d_biases
-
+        # Calculate delta: combining upstream gradient and gradient of the activation (d_L/d_a * d_a/d_z)
+        self.delta = np.multiply(d_output, self.activation_derivative(self.z)) 
+        # Gradient w.r.t. weights
+        self.d_weights = np.dot(self.delta, self.input_vector.T)
+        # Gradient w.r.t. bias (if present)
+        self.d_bias = np.sum(self.delta, axis=1, keepdims=True) if self.has_bias else None
+        # Gradient w.r.t. layer inputs for backpropagation to the previous layer (d_L/d_a for next layer)
+        d_input = np.dot(self.weights.T, self.delta)
+        
         return d_input
 
-    def optimize(self, learning_rate: float = 0.01, optimizer: str = "vanilla") -> None:
-        """
-        Optimizes the layer's weights and biases using the computed gradients.
 
-        Currently, only vanilla gradient descent is implemented for optimization.
+    def update_parameters(self, optimizer: str = "sgd", learning_rate: float = 0.01) -> None:
+        """
+        Updates parameters (weights and biases) using the provided optimizer.
 
         Args:
-            learning_rate (float, optional): The step size for gradient descent optimization. Defaults to 0.01.
-            optimizer (str, optional): The optimization strategy. Defaults to "vanilla".
+            optimizer (str, optional): Optimization method. Defaults to "sgd".
+            learning_rate (float, optional): Step size for optimizer. Defaults to 0.01.
         """
-        if optimizer == "vanilla":
-            self.weights = self.weights - learning_rate * self.d_weights
-            self.bias = self.bias - learning_rate * self.d_biases
+        # Fetch optimizer function
+        optimizer_function = get_optimizer(optimizer)
+        
+        # Update weights
+        self.weights = optimizer_function(self.weights, self.d_weights, learning_rate)
+        # Update bias if present
+        if self.has_bias:
+            self.bias = optimizer_function(self.bias, self.d_bias, learning_rate)
