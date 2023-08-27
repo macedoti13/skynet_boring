@@ -41,7 +41,7 @@ Navigate to the SkyNet directory:
 cd skynet
 ```
 
-3 **Make Magic!:** 
+3. **Make Magic!:** 
 ```bash
 # import all the stuff you need 
 from nn.layers.dense import Dense
