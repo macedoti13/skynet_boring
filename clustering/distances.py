@@ -6,12 +6,12 @@ def get_distance(name: str)  -> Callable[..., Any]:
     Returns the distance function corresponding to the provided name.
     """
     if name == "euclidean":
-        return euclidian
+        return euclidean
     elif name == "manhattan":
         return manhattan
 
 
-def euclidian(X: np.array, y: np.array) -> np.array:
+def euclidean(X: np.array, y: np.array) -> np.array:
     """
     Euclidian distance.
     """

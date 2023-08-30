@@ -5,6 +5,25 @@ class DBSCAN:
     
     
     def __init__(self, max_distance: float, min_points: int, distance_metric: str = "euclidean") -> None:
+        """
+        Initialize the DBSCAN clustering algorithm with the given parameters.
+        
+        Args:
+            max_distance (float): The maximum distance between two samples for one to be considered as in the neighborhood 
+                                of the other. Used to determine the direct reachability of data points.
+            min_points (int): The number of samples (or total weight) in a neighborhood for a point to be considered as 
+                            a core point. This includes the point itself.
+            distance_metric (str, optional): The metric used to calculate distance between points. It can be any distance 
+                                            metric supported by the `get_distance` function. Defaults to "euclidean".
+        
+        Attributes:
+            max_distance (float): The maximum distance threshold.
+            min_points (int): Minimum number of neighboring points for a point to be considered as a core point.
+            distance (callable): A function to compute distance between points based on the chosen `distance_metric`.
+            clusters (list): List of clusters formed after calling the `fit` method. Each cluster is a numpy array 
+                            of points.
+            noise (list): List of noise points detected after calling the `fit` method.
+        """
         self.max_distance = max_distance
         self.min_points = min_points
         self.distance = get_distance(distance_metric)
