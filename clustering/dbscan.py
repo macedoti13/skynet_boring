@@ -9,6 +9,7 @@ class DBSCAN:
         self.min_points = min_points
         self.distance = get_distance(distance_metric)
         self.clusters = []
+        self.noise = []
         
         
     def points_within_range(self, X: np.array, point: np.array) -> np.array:
@@ -80,3 +81,73 @@ class DBSCAN:
                 cluster = np.vstack([cluster, neighbour])
 
         return cluster
+    
+    
+    def create_noise_list(self, potential_noise_list: list) -> None:
+        """
+        Adds to the self.noise list all points that didn't end up in a cluster after the clustering process.
+
+        Args:
+            potential_noise_list (list): List of points (numpy arrays) that were added to the potential noise list.
+        """        
+        for point in potential_noise_list:
+            in_cluster = False
+            
+            # iterates through each cluster 
+            for cluster in self.clusters:
+                
+                # check if the point is inside a cluster after the end of the clustering process
+                if np.any(np.all(cluster == point, axis=1)):
+                    in_cluster = True
+                    break
+            
+            # point didn't end up in a cluster, then add it to the list of noise points
+            if not in_cluster:
+                self.noise.append(point)
+
+
+    def fit(self, X: np.array) -> None:
+        """
+        Fit DBSCAN model to the dataset X. Starts by marking all points as not visited. Them, for each point in the dataset, mark it as visited and check if it's a core point. If it is, start the 
+        process of creating a cluster from it. Once the cluster is created, mark all the points in the cluster as visited so they don't get visited again in future iteractions. In the end, create 
+        the noise list by checking if the points ended up in a cluster or not. 
+
+        Args:
+            X (np.array): The dataset to be clustered. 
+        """        
+        # Initialize a list to keep track of visited points
+        visited = np.zeros(X.shape[0], dtype=bool)
+        
+        # initialize a list for potential noise points
+        potential_noise = []
+        
+        # Iterate through each point in the dataset
+        for idx, point in enumerate(X):    
+            # check if the point hasn't been visited
+            if not visited[idx]:
+                # mark the point as visited
+                visited[idx] = True
+                # get all the neighbours from this point
+                neighbours = self.points_within_range(X, point)
+                
+                # check if it's a core point
+                if len(neighbours) >= self.min_points:
+                    
+                    # it's a core point, then we create a cluster from it
+                    new_cluster = self.expand_cluster(X, point, neighbours)
+                    
+                    # add the new cluster to the list of clusters
+                    self.clusters.append(new_cluster)
+    
+                    # Mark all points in the new_cluster as visited
+                    for cluster_point in new_cluster:
+                        cluster_idx = np.where(np.all(X == cluster_point, axis=1))[0][0]
+                        visited[cluster_idx] = True
+                        
+                else:
+                    # it's not a core point, then add the point as noise
+                    potential_noise.append(point)
+                    
+        # Check each point in potential_noise. If it hasn't ended up in any cluster, add it to the noise list.
+        self.create_noise_list(potential_noise)
+        
