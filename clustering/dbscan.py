@@ -151,3 +151,34 @@ class DBSCAN:
         # Check each point in potential_noise. If it hasn't ended up in any cluster, add it to the noise list.
         self.create_noise_list(potential_noise)
         
+        
+    def predict(self, X: np.array) -> np.array:
+        """
+        Predicts which cluster each point in X belongs to. If the point doesn't belong to any cluster, label it as noise (-1).
+
+        Args:
+            X (np.array): The new data points.
+
+        Returns:
+            labels (np.array): An array of cluster labels.
+        """
+        
+        labels = []
+        
+        # Iterate over each new point
+        for point in X:
+            assigned = False  # Track if the point was assigned to a cluster
+
+            # Check distance to each existing cluster
+            for cluster_idx, cluster in enumerate(self.clusters):
+                distances = self.distance(cluster, point)  # Calculate distances to all points in the cluster
+                if np.min(distances) <= self.max_distance:
+                    labels.append(cluster_idx)  # Assign to the cluster if within max_distance
+                    assigned = True
+                    break  # Break out of cluster checking loop
+
+            # If the point wasn't assigned to any cluster, label as noise (-1)
+            if not assigned:
+                labels.append(-1)
+        
+        return np.array(labels)
