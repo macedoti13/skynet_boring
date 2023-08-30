@@ -33,7 +33,7 @@ class DBSCAN:
         
     def points_within_range(self, X: np.array, point: np.array) -> np.array:
         """
-        Retrieve points from dataset `X` that are within `self.max_distance` from the analyzed `point`, excluding the `point` itself.
+        Retrieve points from dataset `X` that are within `self.max_distance` from the analyzed `point`.
 
         Args:
             X (np.array): The dataset.
@@ -42,15 +42,11 @@ class DBSCAN:
         Returns:
             np.array: An array of points (inner arrays) from `X` that are within `self.max_distance` from the analyzed `point`.
         """     
-        # filters the point from the dataset X
-        mask = np.all(X != point, axis=1)
-        filtered_dataset = X[mask]
-        
         # calculates the distance between all points in X from point
-        distances_to_point = self.distance(filtered_dataset, point)
+        distances_to_point = self.distance(X, point)
         
         # filter only the points that are within self.max_distance from point
-        within_range = filtered_dataset[distances_to_point <= self.max_distance]
+        within_range = X[distances_to_point <= self.max_distance]
         
         return within_range
         
@@ -171,7 +167,7 @@ class DBSCAN:
         self.create_noise_list(potential_noise)
         
         
-    def predict(self, X: np.array) -> np.array:
+    def fit_predict(self, X: np.array) -> np.array:
         """
         Predicts which cluster each point in X belongs to. If the point doesn't belong to any cluster, label it as noise (-1).
 
