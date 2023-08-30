@@ -5,7 +5,7 @@ def get_distance(name: str)  -> Callable[..., Any]:
     """
     Returns the distance function corresponding to the provided name.
     """
-    if name == "euclidian":
+    if name == "euclidean":
         return euclidian
     elif name == "manhattan":
         return manhattan

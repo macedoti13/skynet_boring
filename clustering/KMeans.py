@@ -13,7 +13,7 @@ class KMeans:
         centroids (np.array): The centroids created by the model.
     """    
     
-    def __init__(self, n_clusters: int, distance_metric: str = "euclidian", centroid_initialization_method: str = "random") -> None:
+    def __init__(self, n_clusters: int, distance_metric: str = "euclidean", centroid_initialization_method: str = "random") -> None:
         """
         Initializes the KMeans clustering model.
 

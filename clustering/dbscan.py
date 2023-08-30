@@ -4,7 +4,7 @@ from .distances import get_distance
 class DBSCAN:
     
     
-    def __init__(self, max_distance: float, min_points: int, distance_metric: str = "euclidian") -> None:
+    def __init__(self, max_distance: float, min_points: int, distance_metric: str = "euclidean") -> None:
         self.max_distance = max_distance
         self.min_points = min_points
         self.distance = get_distance(distance_metric)
