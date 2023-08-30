@@ -36,4 +36,4 @@ class DBSCAN:
         
         
     def expand_cluster(self, point: np.array, point_neighbours: list):
-        pass
+        pass # dbscan algorithm
